@@ -4,12 +4,12 @@ Upload a screenshot or photo of a document. ShareSafe suggests sensitive items
 (with a reason for each), you tick the ones to hide, and it paints solid black
 boxes into the pixels and gives you a clean PNG to download.
 
-**Design rule:** detection only *suggests* (pattern rules + Claude), a human
-*approves*, and plain code *redacts*. Claude sees the OCR text only, never the image.
+**Design rule:** detection only *suggests* (pattern rules + an OpenAI model), a
+human *approves*, and plain code *redacts*. The AI model sees the OCR text only, never the image.
 
 > **Use made-up documents only.** All sample data is fake (`@example.com`,
 > 555-01xx phone numbers, public test card numbers). There are no external
-> integrations; the only network call is the optional Claude API request.
+> integrations; the only network call is the optional OpenAI API request.
 
 ## Setup (macOS)
 
@@ -20,11 +20,11 @@ pip install -r requirements.txt
 python make_samples.py            # writes the fake images to samples/
 ```
 
-Optional, for Claude suggestions (names, addresses, IDs):
+Optional, for AI suggestions (names, addresses, IDs):
 
 ```bash
-export ANTHROPIC_API_KEY=...          # never commit this
-export ANTHROPIC_MODEL=claude-opus-5  # optional; this is the default
+export OPENAI_API_KEY=...          # never commit this
+export OPENAI_MODEL=gpt-4o-mini     # optional; default. Use any model your account has that supports structured outputs
 ```
 
 Without a key the app runs with pattern rules only (email, phone, SSN-like, card numbers).
@@ -40,7 +40,7 @@ streamlit run app.py
 ```bash
 pytest -q                          # unit tests; no API calls
 python eval.py                     # score rules against samples/expected.json
-python eval.py --llm               # same, with Claude (uses API calls)
+python eval.py --llm               # same, with the OpenAI model (uses API calls)
 python check_ocr.py samples/mixed.png   # see raw OCR word boxes + rule hits
 ```
 
@@ -61,7 +61,7 @@ python check_ocr.py samples/mixed.png   # see raw OCR word boxes + rule hits
 |---|---|
 | 1. OCR: image to words with pixel boxes | `sharesafe/ocr.py` |
 | 2. Pattern rules (Luhn check for cards) | `sharesafe/rules.py` |
-| 3. Claude suggestions from text, as structured JSON | `sharesafe/llm.py` |
+| 3. OpenAI model suggestions from text, as structured JSON | `sharesafe/llm.py` |
 | 4. Grounding: drop suggestions not in the OCR text | `sharesafe/llm.py` |
 | 5. Merge and map findings back to word boxes | `sharesafe/locate.py` |
 | 6. Human review (checkboxes, default unticked) | `app.py` |

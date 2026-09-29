@@ -10,19 +10,19 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from sharesafe.pipeline import detect
 from sharesafe.redact import apply_redaction, verify
 
-COLORS = {"rule": (255, 140, 0), "llm": (140, 60, 220)}  # orange = rule, purple = Claude
+COLORS = {"rule": (255, 140, 0), "llm": (140, 60, 220)}  # orange = rule, purple = AI (OpenAI)
 
 st.set_page_config(page_title="ShareSafe", layout="wide")
 st.title("ShareSafe")
 st.caption("Find and black out personal data in a document image before you share it.")
 st.warning("Use made-up documents only. This is a prototype.")
 
-# --- Sidebar: Claude is optional so the app still works with no API key.
-has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
-use_llm = st.sidebar.toggle("Use Claude suggestions", value=has_key, disabled=not has_key)
+# --- Sidebar: the AI model is optional so the app still works with no API key.
+has_key = bool(os.environ.get("OPENAI_API_KEY"))
+use_llm = st.sidebar.toggle("Use AI suggestions (OpenAI)", value=has_key, disabled=not has_key)
 st.sidebar.caption(
-    "Claude reads the OCR text only (never the image) to suggest names, addresses and IDs."
-    if has_key else "No ANTHROPIC_API_KEY set: running with pattern rules only."
+    "The AI model reads the OCR text only (never the image) to suggest names, addresses and IDs."
+    if has_key else "No OPENAI_API_KEY set: running with pattern rules only."
 )
 
 uploaded = st.file_uploader("Upload a screenshot or photo (PNG or JPG)", type=["png", "jpg", "jpeg"])
@@ -56,7 +56,7 @@ findings = st.session_state["findings"]
 if st.session_state["llm_warning"]:
     st.info(st.session_state["llm_warning"])
 if st.session_state["dropped"]:
-    st.caption(f"{len(st.session_state['dropped'])} Claude suggestion(s) dropped: text not found in the document.")
+    st.caption(f"{len(st.session_state['dropped'])} AI suggestion(s) dropped: text not found in the document.")
 if not words:
     st.warning("No text could be read from this image. Try a sharper or larger image.")
 
@@ -73,7 +73,7 @@ for n, f in enumerate(findings, 1):
 preview = Image.alpha_composite(preview, layer)
 
 left, right = st.columns([3, 2])
-left.image(preview, caption="Orange = pattern rule, purple = Claude suggestion", use_container_width=True)
+left.image(preview, caption="Orange = pattern rule, purple = AI suggestion", use_container_width=True)
 
 with right:
     if not findings:
@@ -83,7 +83,7 @@ with right:
         st.caption("Tick the items you want blacked out. Nothing is changed until you click Apply.")
     approved = []
     for n, f in enumerate(findings, 1):
-        who = "rule" if f.source == "rule" else "Claude"
+        who = "rule" if f.source == "rule" else "AI"
         # Default unchecked: every redaction is an explicit human decision.
         if st.checkbox(f"**#{n} {f.category}** · `{f.text}` · {who}", key=f"chk_{run_key}_{n}"):
             approved.append(f)

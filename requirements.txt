@@ -1,6 +1,6 @@
 streamlit
 pytesseract
 Pillow>=10.1
-anthropic>=1.9
+openai>=3.22
 pydantic
 pytest

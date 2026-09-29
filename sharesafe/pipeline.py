@@ -15,7 +15,7 @@ class Detection:
     text: str
     findings: list[Finding]      # suggestions only; nothing is redacted here
     llm_warning: str | None
-    dropped: list[Finding]       # Claude suggestions removed by the grounding check
+    dropped: list[Finding]       # AI suggestions removed by the grounding check
 
 
 def detect(img: Image.Image, use_llm: bool) -> Detection:
@@ -23,7 +23,7 @@ def detect(img: Image.Image, use_llm: bool) -> Detection:
     rule_findings = find_rule_matches(text)         # 2. fixed-shape patterns
     llm_findings, warning, dropped = [], None, []
     if use_llm:
-        llm_findings, warning = suggest_with_llm(text)     # 3. Claude, text only
+        llm_findings, warning = suggest_with_llm(text)     # 3. AI model, text only
         llm_findings, dropped = ground(llm_findings, text)  # 4. drop invented text
     findings = attach_boxes(merge(rule_findings, llm_findings), words)  # 5. back to pixels
     return Detection(words, text, findings, warning, dropped)

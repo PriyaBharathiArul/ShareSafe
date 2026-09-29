@@ -1,6 +1,6 @@
 """Score the detection pipeline against a hand-written answer key.
 Usage: python eval.py          (rules only, free)
-       python eval.py --llm    (rules + Claude; needs ANTHROPIC_API_KEY, costs API calls)
+       python eval.py --llm    (rules + OpenAI model; needs OPENAI_API_KEY, costs API calls)
 Prints what it measures. Numbers depend on your machine's OCR and the model run."""
 import json
 import sys
@@ -46,7 +46,7 @@ def main():
     key = json.loads((SAMPLES / "expected.json").read_text())
     totals = {"found": 0, "partial": 0, "MISSED": 0, "extra": 0, "trap": 0, "unlocated": 0}
 
-    print(f"Mode: {'rules + Claude' if use_llm else 'rules only'}\n")
+    print(f"Mode: {'rules + AI (OpenAI)' if use_llm else 'rules only'}\n")
     for name, expected in key.items():
         if name.startswith("_"):
             continue
@@ -57,7 +57,7 @@ def main():
         if d.llm_warning:
             print(f"   note: {d.llm_warning}")
         if d.dropped:
-            print(f"   grounding dropped {len(d.dropped)} Claude suggestion(s): {[f.text for f in d.dropped]}")
+            print(f"   grounding dropped {len(d.dropped)} AI suggestion(s): {[f.text for f in d.dropped]}")
         for status, located, cat, text in rows:
             print(f"   {status:<8}{located:<13}{cat:<11}{text}")
             totals[status] += 1
