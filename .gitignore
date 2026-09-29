@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 samples/*_ocr_boxes.png
 .DS_Store
+.claude/
