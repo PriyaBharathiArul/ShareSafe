@@ -1,0 +1,47 @@
+{
+  "_note": "Answer key for eval.py, written from the fake values in make_samples.py. should_flag = items a reviewer would want suggested. must_not_flag = traps that look sensitive but are not (category limits the trap to that category).",
+  "invoice_normal.png": {
+    "should_flag": [
+      {"text": "Jane Sample", "category": "name"},
+      {"text": "jane.sample@example.com", "category": "email"},
+      {"text": "(206) 555-0142", "category": "phone"},
+      {"text": "42 Test Lane, Faketown, WA 98000", "category": "address"},
+      {"text": "4111 1111 1111 1111", "category": "card"}
+    ],
+    "must_not_flag": [{"text": "$120.00"}, {"text": "#1001"}]
+  },
+  "invoice_hard.png": {
+    "should_flag": [
+      {"text": "Robert Placeholder", "category": "name"},
+      {"text": "EMP-00417", "category": "account_id"},
+      {"text": "1200 Miller Street, Suite 5B Springfield, OR 97000", "category": "address"},
+      {"text": "415.555.0198", "category": "phone"},
+      {"text": "ACCT-889120", "category": "account_id"}
+    ],
+    "must_not_flag": [{"text": "4000-1234-5678"}, {"text": "Miller", "category": "name"}]
+  },
+  "invoice_blurry.png": {
+    "should_flag": [
+      {"text": "Jane Sample", "category": "name"},
+      {"text": "jane.sample@example.com", "category": "email"},
+      {"text": "(206) 555-0142", "category": "phone"},
+      {"text": "42 Test Lane, Faketown, WA 98000", "category": "address"},
+      {"text": "4111 1111 1111 1111", "category": "card"}
+    ],
+    "must_not_flag": [{"text": "$120.00"}]
+  },
+  "no_personal_data.png": {
+    "should_flag": [],
+    "must_not_flag": []
+  },
+  "mixed.png": {
+    "should_flag": [
+      {"text": "Alex Example", "category": "name"},
+      {"text": "alex.example@example.com", "category": "email"},
+      {"text": "312-555-0177", "category": "phone"},
+      {"text": "5555 5555 5555 4444", "category": "card"},
+      {"text": "123-45-6789", "category": "ssn"}
+    ],
+    "must_not_flag": [{"text": "1234 5678 9012 3456"}, {"text": "2026-09-29"}, {"text": "$4,250.00"}]
+  }
+}

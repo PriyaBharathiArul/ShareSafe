@@ -7,11 +7,8 @@ import os
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-from sharesafe.llm import ground, suggest_with_llm
-from sharesafe.locate import attach_boxes, merge
-from sharesafe.ocr import run_ocr
+from sharesafe.pipeline import detect
 from sharesafe.redact import apply_redaction, verify
-from sharesafe.rules import find_rule_matches
 
 COLORS = {"rule": (255, 140, 0), "llm": (140, 60, 220)}  # orange = rule, purple = Claude
 
@@ -49,15 +46,9 @@ except Exception:
 run_key = hashlib.sha256(data).hexdigest()[:16] + str(use_llm)
 if st.session_state.get("run_key") != run_key:
     with st.spinner("Reading the image and looking for sensitive items..."):
-        words, text = run_ocr(img)
-        rule_findings = find_rule_matches(text)
-        llm_findings, llm_warning, dropped = [], None, []
-        if use_llm:
-            llm_findings, llm_warning = suggest_with_llm(text)
-            llm_findings, dropped = ground(llm_findings, text)
-        findings = attach_boxes(merge(rule_findings, llm_findings), words)
-    st.session_state.update(run_key=run_key, words=words, findings=findings,
-                            llm_warning=llm_warning, dropped=dropped, result=None)
+        d = detect(img, use_llm)
+    st.session_state.update(run_key=run_key, words=d.words, findings=d.findings,
+                            llm_warning=d.llm_warning, dropped=d.dropped, result=None)
 
 words = st.session_state["words"]
 findings = st.session_state["findings"]
