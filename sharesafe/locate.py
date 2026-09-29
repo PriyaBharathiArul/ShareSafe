@@ -20,7 +20,9 @@ def merge(rule: list[Finding], llm: list[Finding]) -> list[Finding]:
     return rule + [f for f in llm if norm(f.text) not in seen]
 
 
-def attach_boxes(findings: list[Finding], words: list[Word]) -> list[Finding]:
+def match_words(text: str, words: list[Word]) -> tuple[set[int], set[int]]:
+    """Return (aligned, loose): indexes of words that contain `text`.
+    Shared by locate and by the post-redaction check so both agree on what a match is."""
     # One long normalized string of all words, remembering which word each
     # character came from. Matching on this survives OCR splitting or merging tokens.
     chars, owner, starts, ends = [], [], set(), set()
@@ -30,20 +32,25 @@ def attach_boxes(findings: list[Finding], words: list[Word]) -> list[Finding]:
             chars.append(c)
             owner.append(i)
         ends.add(len(chars))
-    haystack = "".join(chars)
+    haystack, needle = "".join(chars), norm(text)
 
+    # Find every occurrence: the same email may appear twice on a page.
+    spans, s = [], (haystack.find(needle) if needle else -1)
+    while s != -1:
+        spans.append((s, s + len(needle)))
+        s = haystack.find(needle, s + 1)
+    # "Aligned" = starts and ends on word edges. Without this, SSN "123-45-6789"
+    # also matched inside tracking number "1234 5678 9012". "Loose" matches are
+    # kept for when OCR glues text on, e.g. "Email:jane@...".
+    aligned = {i for a, b in spans if a in starts and b in ends for i in owner[a:b]}
+    loose = {i for a, b in spans for i in owner[a:b]}
+    return aligned, loose
+
+
+def attach_boxes(findings: list[Finding], words: list[Word]) -> list[Finding]:
     for f in findings:
-        needle = norm(f.text)
-        # Find every occurrence: the same email may appear twice on a page.
-        spans, s = [], (haystack.find(needle) if needle else -1)
-        while s != -1:
-            spans.append((s, s + len(needle)))
-            s = haystack.find(needle, s + 1)
-        # Prefer matches that start and end on word edges. Without this, SSN
-        # "123-45-6789" also matched inside tracking number "1234 5678 9012".
-        # Fall back to loose matches only if OCR glued text on, e.g. "Email:jane@...".
-        aligned = [(a, b) for a, b in spans if a in starts and b in ends]
-        hit_words = {i for a, b in (aligned or spans) for i in owner[a:b]}
+        aligned, loose = match_words(f.text, words)
+        hit_words = aligned or loose  # loose only when there is no clean match
 
         # One box per text line, so a two-line address gets two tight boxes
         # instead of one big box covering everything between them.
