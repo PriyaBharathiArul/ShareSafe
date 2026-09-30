@@ -11,6 +11,22 @@ human *approves*, and plain code *redacts*. The AI model sees the OCR text only,
 > 555-01xx phone numbers, public test card numbers). There are no external
 > integrations; the only network call is the optional OpenAI API request.
 
+## Demo
+
+**1. Review.** Upload an image; each suggestion is highlighted and listed with its
+reason. Nothing is redacted until you tick items and click *Apply redaction*.
+
+![ShareSafe review screen: email, phone and card number highlighted with reasons, phone and card ticked](docs/demo_review.png)
+
+**2. Result.** Only the ticked items (phone and card) are blacked out; the unticked
+email is left as is. The re-read check runs OCR again on the new image, and the
+redacted PNG can be downloaded.
+
+![Redacted invoice with black boxes over the phone and card number, plus the re-read check results](docs/demo_redacted.png)
+
+*This run used pattern rules only (the AI step was unavailable), which is why
+the name and address were not suggested. All data shown is made up.*
+
 ## Setup (macOS)
 
 ```bash
